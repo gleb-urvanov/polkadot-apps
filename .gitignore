@@ -8,6 +8,7 @@ tmp/
 .env.test.local
 .env.production.local
 .npmrc
+.yarn
 cc-test-reporter
 package-lock.json
 npm-debug.log*
