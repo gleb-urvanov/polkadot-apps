@@ -2,28 +2,23 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { I18nProps as Props } from '@polkadot/react-components/types';
-
 import BN from 'bn.js';
 import React, { useState } from 'react';
 import { Button, InputAddress, InputBalance, Modal, TxButton } from '@polkadot/react-components';
-import { useAccounts } from '@polkadot/react-hooks';
+import { useToggle } from '@polkadot/react-hooks';
 
-import translate from '../translate';
+import { useTranslation } from '../translate';
 
-function Propose ({ className, t }: Props): React.ReactElement<Props> | null {
-  const { hasAccounts } = useAccounts();
+interface Props {
+  className?: string;
+}
+
+export default function Propose ({ className }: Props): React.ReactElement<Props> | null {
+  const { t } = useTranslation();
   const [accountId, setAccountId] = useState<string | null>(null);
   const [beneficiary, setBeneficiary] = useState<string | null>(null);
-  const [isProposeOpen, setIsProposeOpen] = useState(false);
+  const [isProposeOpen, togglePropose] = useToggle();
   const [value, setValue] = useState<BN | undefined>();
-
-  if (!hasAccounts) {
-    return null;
-  }
-
-  const _togglePropose = (): void => setIsProposeOpen(!isProposeOpen);
-
   const hasValue = value?.gtn(0);
 
   return (
@@ -32,7 +27,6 @@ function Propose ({ className, t }: Props): React.ReactElement<Props> | null {
         <Modal
           className={className}
           header={t('Submit treasury proposal')}
-          open
           size='small'
         >
           <Modal.Content>
@@ -58,26 +52,17 @@ function Propose ({ className, t }: Props): React.ReactElement<Props> | null {
               onChange={setValue}
             />
           </Modal.Content>
-          <Modal.Actions>
-            <Button.Group>
-              <Button
-                icon='cancel'
-                isNegative
-                label={t('Cancel')}
-                onClick={_togglePropose}
-              />
-              <Button.Or />
-              <TxButton
-                accountId={accountId}
-                icon='add'
-                isDisabled={!accountId || !hasValue}
-                isPrimary
-                label={t('Submit proposal')}
-                onClick={_togglePropose}
-                params={[value, beneficiary]}
-                tx='treasury.proposeSpend'
-              />
-            </Button.Group>
+          <Modal.Actions onCancel={togglePropose}>
+            <TxButton
+              accountId={accountId}
+              icon='add'
+              isDisabled={!accountId || !hasValue}
+              isPrimary
+              label={t('Submit proposal')}
+              onStart={togglePropose}
+              params={[value, beneficiary]}
+              tx='treasury.proposeSpend'
+            />
           </Modal.Actions>
         </Modal>
       )}
@@ -85,10 +70,8 @@ function Propose ({ className, t }: Props): React.ReactElement<Props> | null {
         icon='check'
         isPrimary
         label={t('Submit proposal')}
-        onClick={_togglePropose}
+        onClick={togglePropose}
       />
     </>
   );
 }
-
-export default translate(Propose);

@@ -3,7 +3,6 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { ApiProps } from '@polkadot/react-api/types';
-import { I18nProps } from '@polkadot/react-components/types';
 import { Route } from '@polkadot/apps-routing/types';
 import { AccountId } from '@polkadot/types/interfaces';
 
@@ -14,11 +13,11 @@ import { Badge, Icon, Menu, Tooltip } from '@polkadot/react-components';
 import { useAccounts, useApi, useCall } from '@polkadot/react-hooks';
 import { isFunction } from '@polkadot/util';
 
-import translate from '../translate';
+import { useTranslation } from '../translate';
 
 const DUMMY_COUNTER = (): number => 0;
 
-interface Props extends I18nProps {
+interface Props {
   isCollapsed: boolean;
   onClick: () => void;
   route: Route;
@@ -74,7 +73,9 @@ function checkVisible (name: string, { api, isApiReady, isApiConnected }: ApiPro
   return notFound.length === 0;
 }
 
-function Item ({ route: { Modal, useCounter = DUMMY_COUNTER, display, i18n, icon, name }, t, isCollapsed, onClick }: Props): React.ReactElement<Props> | null {
+export default function Item ({ route, isCollapsed, onClick }: Props): React.ReactElement<Props> | null {
+  const { Modal, useCounter = DUMMY_COUNTER, display, i18n, icon, name } = route;
+  const { t } = useTranslation();
   const { allAccounts, hasAccounts } = useAccounts();
   const apiProps = useApi();
   const sudoKey = useCall<AccountId>(apiProps.isApiReady ? apiProps.api.query.sudo?.key : undefined, []);
@@ -87,7 +88,10 @@ function Item ({ route: { Modal, useCounter = DUMMY_COUNTER, display, i18n, icon
   }, [allAccounts, sudoKey]);
 
   useEffect((): void => {
-    setIsVisible(checkVisible(name, apiProps, hasAccounts, hasSudo, display));
+    const isVisible = checkVisible(name, apiProps, hasAccounts, hasSudo, display);
+
+    route.isIgnored = !isVisible;
+    setIsVisible(isVisible);
   }, [apiProps, hasAccounts, hasSudo]);
 
   if (!isVisible) {
@@ -141,5 +145,3 @@ function Item ({ route: { Modal, useCounter = DUMMY_COUNTER, display, i18n, icon
     </Menu.Item>
   );
 }
-
-export default translate(Item);
