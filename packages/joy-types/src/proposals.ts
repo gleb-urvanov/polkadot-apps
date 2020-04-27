@@ -127,9 +127,19 @@ export class ExecutionFailed extends JoyStruct<IExecutionFailed> {
   }
 }
 
+export enum ApprovedProposalStatusKeys {
+  PendingExecution = 'PendingExecution',
+  Executed = 'Executed',
+  ExecutionFailed = 'ExecutionFailed',
+}
+
 export class ApprovedProposalStatus extends Enum {
-  constructor(value?: any) {
-    super({PendingExecution: Null, Executed: Null, ExecutionFailed: ExecutionFailed}, value)
+  constructor(value?: any, index?: number) {
+    super({
+      [ApprovedProposalStatusKeys.PendingExecution]: Null, 
+      [ApprovedProposalStatusKeys.Executed]: Null, 
+      [ApprovedProposalStatusKeys.ExecutionFailed]: ExecutionFailed
+    }, value, index)
   }
 }
 
@@ -208,6 +218,8 @@ export function registerProposalTypes() {
       ProposalId,
       ProposalStatus,
       VoteKind,
+      FinalizationData,
+      ActiveStake,
       ProposalParametersImpl,
       VotingResultsImpl
     });
@@ -236,6 +248,12 @@ export function registerProposalTypes() {
         requiredStake: 'Option<Balance>'
       }
     });
+    // getTypeRegistry().register({
+    //   'ProposalStatus': {
+    //     active: 'Option<ActiveStake>',
+    //     finalized: 'FinalizationData'
+    //   }
+    // });
     getTypeRegistry().register({
       'VotingResults': {
         abstensions: 'u32',
